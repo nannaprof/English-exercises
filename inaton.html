@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preposition Detective — B1 British English</title>
+<style>
+  :root {
+    --ink:#e8edf4; --muted:#9aa7b8; --paper:#151a22; --bg:#090c11;
+    --accent:#55c7a2; --accent2:#173a32; --wrong:#ff766d; --wrongbg:#3b1d1d;
+    --gold:#e7b84b; --line:#2b3442;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%,rgba(45,120,98,.16),transparent 30%),
+      radial-gradient(circle at 85% 90%,rgba(70,80,120,.14),transparent 30%),
+      var(--bg);
+    color:var(--ink); min-height:100vh;
+  }
+  .wrap{max-width:900px;margin:auto;padding:28px 18px 45px}
+  .top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:18px}
+  .badge{background:#0e211c;color:#8de0c4;border:1px solid #245647;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em}
+  .score{font-weight:800;color:#d9e2ed}
+  .card{
+    background:linear-gradient(145deg,rgba(21,26,34,.98),rgba(16,21,29,.98));
+    border:1px solid var(--line); border-radius:22px;
+    box-shadow:0 18px 55px rgba(0,0,0,.35); padding:30px;
+  }
+  h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);line-height:1}
+  h2{margin:0 0 10px}
+  .intro{color:var(--muted);font-size:17px;line-height:1.55;max-width:680px}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+  .rule{padding:14px;background:#10151d;border-radius:14px;border:1px solid var(--line)}
+  .rule b{display:block;margin-bottom:4px}
+  button{
+    border:0;border-radius:12px;padding:13px 17px;font-size:16px;font-weight:750;
+    cursor:pointer;transition:.15s transform,.15s background,.15s opacity;color:var(--ink);
+  }
+  button:hover{transform:translateY(-1px)}
+  button:disabled{cursor:default;opacity:1}
+  .primary{background:var(--accent);color:#07130f}
+  .secondary{background:#202733;color:var(--ink)}
+  .hidden{display:none!important}
+  .progress-row{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin-bottom:8px}
+  .bar{height:9px;background:#252d38;border-radius:99px;overflow:hidden;margin-bottom:24px}
+  .fill{height:100%;background:var(--accent);width:0%;transition:width .3s}
+  .scenario{font-size:14px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+  .question{font-size:25px;line-height:1.45;margin:16px 0 22px}
+  .blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--accent);color:var(--accent);text-align:center}
+  .options{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .option{background:#1a202a;border:2px solid #303947;text-align:left}
+  .option:hover{border-color:var(--accent);background:#202a31}
+  .option.correct{background:var(--accent2);border-color:var(--accent);color:#a9ead6}
+  .option.wrong{background:var(--wrongbg);border-color:var(--wrong);color:#ff9a94}
+  .feedback{margin-top:18px;padding:16px;border-radius:14px;background:#111821;border:1px solid var(--line);line-height:1.55}
+  .feedback strong{display:block;margin-bottom:4px}
+  .nextrow{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:12px}
+  .streak{color:var(--gold);font-weight:800}
+  .tip{color:var(--muted);font-size:14px}
+  .result{text-align:center}
+  .bigscore{font-size:64px;font-weight:900;color:var(--accent);margin:8px 0}
+  .rank{font-size:20px;font-weight:800}
+  .review{text-align:left;margin-top:25px}
+  .review-item{padding:12px;border-bottom:1px solid var(--line);line-height:1.45}
+  .review-item b{color:var(--accent)}
+  @media(max-width:600px){.card{padding:22px}.options{grid-template-columns:1fr}.question{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="badge">B1 • BRITISH ENGLISH</span>
+    <span class="score" id="scoreTop">Score: 0</span>
+  </div>
+
+  <section class="card" id="start" style="min-height:72vh;display:flex;align-items:center;justify-content:center;">
+    <button class="primary" onclick="startGame()" style="font-size:18px;padding:16px 24px;">Start the investigation →</button>
+  </section>
+
+  <section class="card hidden" id="game">
+    <div class="progress-row"><span id="counter"></span><span id="streak"></span></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="scenario" id="scenario"></div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback hidden" id="feedback"></div>
+    <div class="nextrow">
+      <span class="tip" id="tip"></span>
+      <button class="primary hidden" id="next" onclick="nextQuestion()">Next clue →</button>
+    </div>
+  </section>
+
+  <section class="card result hidden" id="result">
+    <h2>Case closed! 🔎</h2>
+    <div class="bigscore" id="finalScore"></div>
+    <div class="rank" id="rank"></div>
+    <p id="resultText"></p>
+    <button class="primary" onclick="restart()">Investigate again</button>
+    <div class="review">
+      <h3>Your case notes</h3>
+      <div id="reviewList"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const questions = [
+ {s:"Arrival",q:"I arrived ___ London on Friday evening.",a:["at","in","on"],c:1,e:"Use <b>arrive in</b> with cities and countries."},
+ {s:"Arrival",q:"We arrived ___ the hotel at about nine.",a:["in","at","on"],c:1,e:"Use <b>arrive at</b> with buildings and specific places."},
+ {s:"Arrival",q:"What time did you arrive ___ the airport?",a:["at","in","on"],c:0,e:"We say <b>arrive at the airport</b>."},
+ {s:"Arrival",q:"They arrived ___ Spain early in the morning.",a:["at","on","in"],c:2,e:"Use <b>arrive in</b> with countries."},
+ {s:"Transport",q:"She usually goes to work ___ the train.",a:["in","on","at"],c:1,e:"For a train, bus or plane, use <b>on</b>."},
+ {s:"Transport",q:"We travelled ___ a bus from Oxford to London.",a:["on","at","in"],c:0,e:"We normally say <b>on a bus</b>."},
+ {s:"Transport",q:"He was waiting ___ the bus stop.",a:["on","at","in"],c:1,e:"A bus stop is a specific place, so use <b>at</b>."},
+ {s:"Transport",q:"There were lots of people ___ the station.",a:["at","on","in"],c:0,e:"Use <b>at the station</b> for a specific location."},
+ {s:"Time",q:"Our English class starts ___ 6 o’clock.",a:["in","on","at"],c:2,e:"Use <b>at</b> with clock times."},
+ {s:"Time",q:"My brother was born ___ 2018.",a:["at","on","in"],c:2,e:"Use <b>in</b> with years."},
+ {s:"Time",q:"The museum is closed ___ Mondays.",a:["in","at","on"],c:2,e:"Use <b>on</b> with days."},
+ {s:"Time",q:"We’re meeting ___ 1st March.",a:["at","in","on"],c:2,e:"Use <b>on</b> with dates."},
+ {s:"Time",q:"I usually get up early ___ the morning.",a:["at","on","in"],c:2,e:"Use <b>in the morning</b>."},
+ {s:"Time",q:"I don't like driving ___ night.",a:["in","on","at"],c:2,e:"The fixed expression is <b>at night</b>."},
+ {s:"British English",q:"Are you doing anything ___ the weekend?",a:["on","in","at"],c:2,e:"In British English, we say <b>at the weekend</b>."},
+ {s:"British English",q:"We went to the seaside ___ Easter.",a:["at","on","in"],c:0,e:"For a festival period such as Easter, use <b>at Easter</b>."},
+ {s:"Places",q:"My sister is ___ university this year.",a:["at","on","in"],c:0,e:"Use <b>at university</b> for the place/activity in British English."},
+ {s:"Places",q:"I'll meet you ___ home after work.",a:["in","at","on"],c:1,e:"We say <b>at home</b>."},
+ {s:"Places",q:"Dad is still ___ work.",a:["at","in","on"],c:0,e:"The usual expression is <b>at work</b>."},
+ {s:"Places",q:"She is studying ___ school today.",a:["at","on","in"],c:0,e:"Use <b>at school</b> for the place/activity."},
+ {s:"Verb pattern",q:"It depends ___ the weather.",a:["of","on","at"],c:1,e:"The verb is <b>depend on</b>."},
+ {s:"Verb pattern",q:"I don't agree ___ you.",a:["to","with","on"],c:1,e:"Use <b>agree with</b> a person."},
+ {s:"Verb pattern",q:"I'm waiting ___ my friend outside.",a:["for","to","at"],c:0,e:"Use <b>wait for</b> someone or something."},
+ {s:"Verb pattern",q:"Please listen ___ what I'm saying.",a:["at","to","for"],c:1,e:"Use <b>listen to</b> someone or something."},
+ {s:"Verb pattern",q:"Who's going to pay ___ the meal?",a:["for","to","at"],c:0,e:"Use <b>pay for</b> something."},
+ {s:"Verb pattern",q:"I asked ___ a chicken sandwich.",a:["for","to","with"],c:0,e:"Use <b>ask for</b> something when requesting it."},
+ {s:"Verb pattern",q:"Don't worry ___ the exam.",a:["of","about","with"],c:1,e:"Use <b>worry about</b> something."},
+ {s:"Verb pattern",q:"Do you believe ___ ghosts?",a:["at","on","in"],c:2,e:"Use <b>believe in</b> something or someone."},
+ {s:"Verb pattern",q:"What are you thinking ___?",a:["about","on","at"],c:0,e:"Use <b>think about</b> something when considering it."},
+ {s:"Verb pattern",q:"What do you think ___ this painting?",a:["at","about","for"],c:1,e:"Use <b>think about</b> something when asking for an opinion."},
+ {s:"Verb pattern",q:"Who does this bag belong ___?",a:["with","to","for"],c:1,e:"The fixed expression is <b>belong to</b> someone."},
+ {s:"Money",q:"I don't spend much money ___ food.",a:["on","at","in"],c:0,e:"Use <b>spend money on</b> something."},
+ {s:"Speaking",q:"I need to speak ___ Martin after the meeting.",a:["to","at","on"],c:0,e:"Use <b>speak to</b> someone."},
+ {s:"Speaking",q:"Could you talk ___ your teacher about it?",a:["to","on","at"],c:0,e:"Use <b>talk to</b> someone."},
+ {s:"Daily life",q:"She spends a lot of time ___ the kitchen.",a:["at","on","in"],c:2,e:"Use <b>in the kitchen</b> for an enclosed room."},
+ {s:"Daily life",q:"There is a new café ___ the corner.",a:["at","on","in"],c:0,e:"The fixed expression is <b>at the corner</b>."},
+ {s:"Surfaces",q:"Your keys are ___ the table.",a:["in","at","on"],c:2,e:"Use <b>on</b> for a surface."},
+ {s:"Surfaces",q:"There is a plant ___ the balcony.",a:["on","at","in"],c:0,e:"A balcony is treated as a surface/place: <b>on the balcony</b>."},
+ {s:"Surfaces",q:"There's a photo ___ the wall.",a:["at","on","in"],c:1,e:"Use <b>on the wall</b>."},
+ {s:"Buildings",q:"Let's meet ___ the museum at two.",a:["in","on","at"],c:2,e:"Use <b>at the museum</b> when referring to the meeting point."},
+ {s:"Buildings",q:"We spent two hours ___ the museum.",a:["at","on","in"],c:0,e:"Use <b>at the museum</b> for the place/activity."},
+ {s:"Dates",q:"The festival begins ___ Tuesday.",a:["at","in","on"],c:2,e:"Use <b>on</b> with days."},
+ {s:"Seasons",q:"We often go skiing ___ winter.",a:["on","at","in"],c:2,e:"Use <b>in</b> with seasons."},
+ {s:"Mixed",q:"He is very good ___ remembering names.",a:["at","in","on"],c:0,e:"The adjective pattern is <b>good at</b> + noun or -ing form."},
+ {s:"Mixed",q:"I'm interested ___ British history.",a:["on","in","at"],c:1,e:"The adjective pattern is <b>interested in</b>."},
+ {s:"Mixed",q:"She's afraid ___ flying.",a:["from","of","at"],c:1,e:"The fixed expression is <b>afraid of</b>."},
+ {s:"Mixed",q:"Are you ready ___ the journey?",a:["for","to","at"],c:0,e:"Use <b>ready for</b> a noun."},
+ {s:"Mixed",q:"I'm sorry ___ being late.",a:["about","for","on"],c:1,e:"Use <b>sorry for</b> + noun/-ing when apologising."},
+ {s:"Mixed",q:"They are looking ___ a flat in Manchester.",a:["at","for","on"],c:1,e:"Use <b>look for</b> when trying to find something."},
+ {s:"Mixed",q:"Please look ___ this word in the dictionary.",a:["up","for","at"],c:0,e:"The phrasal verb is <b>look up</b> a word."}
+];
+
+let order=[], index=0, score=0, streak=0, answered=false, mistakes=[];
+
+function startGame(){
+  order=[...questions].sort(()=>Math.random()-.5);
+  index=0; score=0; streak=0; mistakes=[];
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  render();
+}
+function render(){
+  answered=false;
+  const x=order[index];
+  document.getElementById("counter").textContent=`Clue ${index+1} of ${order.length}`;
+  document.getElementById("streak").textContent=streak>=2?`🔥 ${streak} in a row`:"";
+  document.getElementById("fill").style.width=((index/order.length)*100)+"%";
+  document.getElementById("scenario").textContent=x.s;
+  document.getElementById("question").innerHTML=x.q.replace("___",'<span class="blank">?</span>');
+  const box=document.getElementById("options"); box.innerHTML="";
+  x.a.forEach((opt,i)=>{
+    const b=document.createElement("button");
+    b.className="option"; b.textContent=opt;
+    b.onclick=()=>choose(i,b);
+    box.appendChild(b);
+  });
+  document.getElementById("feedback").classList.add("hidden");
+  document.getElementById("next").classList.add("hidden");
+  document.getElementById("tip").textContent="Choose the preposition that sounds natural.";
+}
+function choose(i,btn){
+  if(answered)return;
+  answered=true;
+  const x=order[index], buttons=[...document.querySelectorAll(".option")];
+  buttons.forEach(b=>b.disabled=true);
+  buttons[x.c].classList.add("correct");
+  const fb=document.getElementById("feedback");
+  if(i===x.c){
+    streak++;
+    let pts=10+(streak>=3?5:0);
+    score+=pts;
+    fb.innerHTML=`<strong>✅ Correct! +${pts} points</strong>${x.e}`;
+  }else{
+    streak=0;
+    btn.classList.add("wrong");
+    mistakes.push({q:x.q,chosen:x.a[i],correct:x.a[x.c]});
+    fb.innerHTML=`<strong>❌ Not quite.</strong>The answer is <b>${x.a[x.c]}</b>. ${x.e}`;
+  }
+  document.getElementById("scoreTop").textContent=`Score: ${score}`;
+  fb.classList.remove("hidden");
+  document.getElementById("next").classList.remove("hidden");
+  document.getElementById("tip").textContent=streak>=3?"Brilliant streak — keep it going!":"Read the explanation before moving on.";
+}
+function nextQuestion(){
+  index++;
+  if(index>=order.length) finish(); else render();
+}
+function finish(){
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("finalScore").textContent=`${score} / ${questions.length*10 + 25}`;
+  let pct=score/(questions.length*10+25);
+  let rank=pct>=.9?"🏆 Preposition Master":pct>=.75?"🕵️ Sharp Detective":pct>=.6?"🔍 Good Investigator":"📚 Case still open";
+  document.getElementById("rank").textContent=rank;
+  document.getElementById("resultText").textContent=
+    mistakes.length===0?"Perfect investigation. You spotted every clue!":
+    `You missed ${mistakes.length} clue${mistakes.length===1?"":"s"}. Review them below, then try again.`;
+  document.getElementById("reviewList").innerHTML=mistakes.length
+    ? mistakes.map(m=>`<div class="review-item">${m.q}<br>You chose <b>${m.chosen}</b> — correct: <b>${m.correct}</b></div>`).join("")
+    : "<p>Nothing to review — excellent work.</p>";
+}
+function restart(){
+  document.getElementById("result").classList.add("hidden");
+  startGame();
+}
+</script>
+</body>
+</html>
