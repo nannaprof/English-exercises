@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Airport Vocabulary — A2 Speaking Review</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#f5f6f8;color:#20242a;margin:0}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px}
+  h1{font-size:30px;margin:0 0 8px}.sub{color:#59636e;margin-bottom:24px}
+  .card{background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px #00000012;margin-bottom:18px}
+  button{border:0;border-radius:9px;padding:11px 16px;background:#20242a;color:white;cursor:pointer;margin:5px;font-size:15px}
+  button.secondary{background:#e9edf1;color:#20242a}.big{font-size:28px;font-weight:700;margin:15px 0}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+  .option{background:#eef1f4;color:#20242a;text-align:left;min-height:52px}
+  .option:hover{background:#dde3e8}.correct{background:#dff2e3!important}.wrong{background:#f8dddd!important}
+  .feedback{font-weight:700;min-height:24px;margin-top:15px}
+  .progress{height:8px;background:#e4e7eb;border-radius:8px;overflow:hidden}.bar{height:100%;width:0;background:#20242a}
+  .hidden{display:none}.pill{display:inline-block;background:#eef1f4;padding:6px 9px;border-radius:20px;margin:3px}
+  .prompt{font-size:21px;line-height:1.45}.note{color:#69737e;font-size:14px}
+  textarea{width:100%;box-sizing:border-box;border:1px solid #ccd2d8;border-radius:9px;padding:12px;font-size:16px;min-height:90px}
+  @media(max-width:650px){.options{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Airport Vocabulary — A2 Speaking Review</h1>
+    <div class="sub">Teacher-led screen-share activity · 12 target words</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="card" id="meaning">
+    <h2>1. Meaning check</h2>
+    <p class="note">Ask the student to explain or translate the word first. Then choose the best meaning.</p>
+    <div class="big" id="word"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="secondary" onclick="nextMeaning()">Next</button>
+  </section>
+
+  <section class="card">
+    <h2>2. Speaking: Airport journey</h2>
+    <p class="prompt">Imagine you are at the airport. Tell me what you do from the moment you enter the airport until you get your suitcase.</p>
+    <p><span class="pill">First…</span><span class="pill">Then…</span><span class="pill">After that…</span><span class="pill">Finally…</span></p>
+    <p class="note">Teacher: ask the student to use at least 6 target words. Do not show the word list immediately.</p>
+    <button onclick="showList()">Show vocabulary</button>
+    <div id="list" class="hidden"></div>
+  </section>
+
+  <section class="card">
+    <h2>3. Situational questions</h2>
+    <p class="note">Ask follow-up questions. The student should answer in complete sentences.</p>
+    <div id="situ"></div>
+    <button onclick="newSituation()">New question</button>
+  </section>
+
+  <section class="card">
+    <h2>4. Quick final check</h2>
+    <p>Complete the sentence with a target word.</p>
+    <div class="big" id="gap"></div>
+    <div class="options" id="gapopts"></div>
+    <div class="feedback" id="gapfeedback"></div>
+    <button class="secondary" onclick="newGap()">Next</button>
+  </section>
+
+  <section class="card">
+    <h2>Teacher notes</h2>
+    <ul>
+      <li><b>Understand:</b> student can explain the word and identify the place/process.</li>
+      <li><b>Recognise:</b> student chooses the correct meaning but cannot explain it.</li>
+      <li><b>Needs review:</b> student confuses the word or cannot identify it.</li>
+    </ul>
+    <p class="note">Important distinction: arrivals/departures are areas or information about incoming/outgoing flights; gates are specific boarding points; bag drop is specifically for leaving checked baggage.</p>
+  </section>
+</div>
+
+<script>
+const vocab = [
+ ["arrivals","the airport area for flights that come in"],
+ ["bag drop","a place where you leave your checked suitcase"],
+ ["baggage-reclaim","the place where you collect your suitcase after a flight"],
+ ["check-in","the process of getting your boarding pass and checking your luggage"],
+ ["customs","the place where officials check goods you bring into a country"],
+ ["departures","the airport area for flights that leave"],
+ ["gates","the places where passengers wait to board a plane"],
+ ["lifts","machines that take people between floors"],
+ ["passport control","the place where officials check your passport"],
+ ["security check","the place where passengers and bags are checked for safety"],
+ ["terminal","the main airport building for passengers"],
+ ["trolley","a small vehicle you push to carry luggage"]
+];
+
+let mi=0, score=0;
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function renderMeaning(){
+ const [w,meaning]=vocab[mi];
+ document.getElementById("word").textContent=w;
+ document.getElementById("feedback").textContent="";
+ const wrong=shuffle(vocab.filter(x=>x[0]!==w)).slice(0,3).map(x=>x[1]);
+ const opts=shuffle([meaning,...wrong]);
+ const box=document.getElementById("options"); box.innerHTML="";
+ opts.forEach(o=>{
+  const b=document.createElement("button"); b.className="option"; b.textContent=o;
+  b.onclick=()=>checkMeaning(b,o===meaning,meaning); box.appendChild(b);
+ });
+ updateBar();
+}
+function checkMeaning(btn,ok,answer){
+ document.querySelectorAll("#options button").forEach(b=>b.disabled=true);
+ btn.classList.add(ok?"correct":"wrong");
+ document.getElementById("feedback").textContent=ok?"Correct.":"Not quite. Best answer: "+answer;
+ if(ok)score++;
+}
+function nextMeaning(){mi=(mi+1)%vocab.length;renderMeaning()}
+
+const situations=[
+ "You cannot find your suitcase after the flight. Where do you go?",
+ "You have a suitcase to check in. Where can you leave it?",
+ "You need to show your passport before entering the country. Where do you go?",
+ "You have passed security. What place do you need to find before boarding?",
+ "Your flight leaves at 18:30. Do you look at Arrivals or Departures?",
+ "You have two heavy suitcases. What can you use to move them around the terminal?",
+ "You need to go from the ground floor to the first floor. What can you use?",
+ "An officer asks about the things you are bringing into the country. Where are you?"
+];
+let si=0;
+function newSituation(){document.getElementById("situ").innerHTML="<p class='prompt'>"+situations[si%situations.length]+"</p>";si++}
+function showList(){document.getElementById("list").classList.remove("hidden");document.getElementById("list").innerHTML=vocab.map(x=>"<span class='pill'>"+x[0]+"</span>").join("")}
+
+const gaps=[
+ ["After the flight, I go to ______ to collect my suitcase.","baggage-reclaim"],
+ ["I leave my suitcase at the ______ before going to security.","bag drop"],
+ ["My flight leaves at 10:00, so I go to ______.","departures"],
+ ["I wait at ______ until it is time to board.","gates"],
+ ["The officer checks my passport at ______.","passport control"],
+ ["I use a ______ to carry my heavy bags.","trolley"],
+ ["We go through a ______ before we enter the boarding area.","security check"],
+ ["The airport has several buildings, but our flight is in Terminal 2. A ______ is a passenger building.","terminal"]
+];
+let gi=0;
+function newGap(){
+ const [q,ans]=gaps[gi%gaps.length]; document.getElementById("gap").textContent=q;
+ const distract=shuffle(vocab.map(x=>x[0]).filter(x=>x!==ans)).slice(0,3);
+ const opts=shuffle([ans,...distract]); const box=document.getElementById("gapopts");box.innerHTML="";
+ document.getElementById("gapfeedback").textContent="";
+ opts.forEach(o=>{const b=document.createElement("button");b.className="option";b.textContent=o;b.onclick=()=>{document.querySelectorAll("#gapopts button").forEach(x=>x.disabled=true);b.classList.add(o===ans?"correct":"wrong");document.getElementById("gapfeedback").textContent=o===ans?"Correct.":"Best answer: "+ans};box.appendChild(b)});
+ gi++;
+}
+function updateBar(){document.getElementById("bar").style.width=((mi+1)/vocab.length*100)+"%"}
+renderMeaning();newSituation();newGap();
+</script>
+</body>
+</html>
